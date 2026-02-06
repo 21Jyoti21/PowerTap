@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="jquery-3.6.0.min.js"></script>
+    <script src="mqtt.min.js"></script>
+    <script src="chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /*padding: 20px;*/
+        }
+        .back-btn {
+            border: none;
+            background: #667eea;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .back-btn.disabled {
+            background: #aaa;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .charging-device {
+            background: linear-gradient(145deg, #e6e6e6, #ffffff);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .connection-status {
+            text-align: center;
+            padding: 6px 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            font-size:20px;
+            font-weight: bold;
+        }
+
+        .status-waiting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .lcd-display {
+            background: linear-gradient(180deg, #a8d5a8 0%, #8bc68b 100%);
+            border: 8px solid #3d5a3d;
+            border-radius: 8px;
+            border-width: 6px;
+            padding: 12px;
+            margin-top: 5px;
+            margin-bottom:10px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .lcd-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .lcd-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 20px;
+            color: #2d4a2d;
+        }
+
+        .voltage,
+        .current {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d4a2d;
+        }
+
+        .energy {
+            font-weight: bold;
+        }
+
+        .datetime {
+            color: #3d5a3d;
+            font-size: 13px;
+        }
+
+        .config-panel {
+            margin-bottom: 80px;
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            /*margin-bottom: 20px;*/
+            overflow: hidden;
+        }
+
+        .config-tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .config-tab {
+            white-space: nowrap;
+            flex: 1;
+            padding: 10px 6px;
+            background: white;
+            border: none;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .config-tab.active {
+            color: #667eea;
+        }
+
+        .config-tab:hover {
+            background: #f5f5f5;
+        }
+
+        .config-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 1.5px;
+            background: #667eea;
+        }
+
+        .config-content {
+            padding: 30px 25px;
+            min-height: 240px;
+        }
+
+        .config-mode-content {
+            display: none;
+            min-height: 240px;
+        }
+
+        .config-mode-content.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mode-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .mode-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 0;
+            width: 100%;
+        }
+
+        .mode-title {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mode-subtitle {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .slider-section {
+            margin-bottom: 0;
+            width: 100%;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .slider-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: #667eea;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .slider-btn:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .slider-btn:active {
+            transform: scale(0.95);
+        }
+
+        .slider-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #000;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .slider-value .unit {
+            font-size: 18px;
+            color: #666;
+            margin-left: 5px;
+        }
+
+        .slider-track {
+            position: relative;
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: left 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider-progress {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .slider-info {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .progress-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #333;
+            padding: 8px 0;
+        }
+
+        .progress-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .progress-details {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-percentage {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .progress-fraction {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .estimated-time {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #666;
+            padding-top: 6px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 10px;
+        }
+
+        .estimated-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .chart-section {
+            margin-top: 5px;
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-section h3 {
+            color: #555;
+            padding: 10px 15px 6px 15px;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .tab-header {
+            display: flex;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+            padding: 0 12px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 8px 6px;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            outline: none;
+        }
+
+        .tab-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 1.5px;
+            background: #667eea;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-button.active {
+            color: #667eea;
+        }
+
+        .tab-button:hover {
+            background: rgba(102, 126, 234, 0.04);
+            color: #555;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 10px;
+            height: 200px;
+        }
+
+        .start-slider-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .start-slider-container {
+            position: relative;
+            background: linear-gradient(90deg, #e0e0e0, #f0f0f0);
+            border-radius: 40px;
+            height: 54px;
+            overflow: hidden;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .start-slider-track {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .start-slider-button {
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: left 0.3s ease, background 0.3s ease;
+            z-index: 2;
+        }
+
+        .start-slider-button svg {
+            width: 22px;
+            height: 22px;
+            transform: rotate(0deg);
+            fill: #666;
+            transition: transform 0.3s ease, fill 0.3s ease;
+        }
+
+        .start-slider-text {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+
+        .start-slider-container.sliding .start-slider-button {
+            transition: none;
+        }
+
+        .start-slider-container.completed .start-slider-button {
+            left: calc(100% - 65px);
+            background: #4caf50;
+        }
+
+        /* .start-slider-container.completed .start-slider-button svg {
+            fill: white;
+        } */
+
+        .start-slider-container.charging {
+            background: linear-gradient(90deg, #138604, #37c558);
+            cursor: pointer;
+        }
+
+        .start-slider-container.charging .start-slider-button {
+            left: calc(100% - 65px);
+            background: white;
+            ;
+        }
+
+        .start-slider-container.charging .start-slider-button svg {
+            transform: rotate(180deg);
+            fill: #ab0b0b;
+        }
+
+        .start-slider-container.charging .start-slider-text {
+            color: white;
+        }
+
+        .start-slider-container.stopped {
+            cursor: pointer;
+        }
+
+        .start-slider-container.stopped .start-slider-button {
+            left: 5px;
+            background: white;
+        }
+
+        .start-slider-container.stopped .start-slider-button svg {
+            transform: rotate(0deg);
+            fill: #138604;
+        }
+
+        .start-slider-container.stopped .start-slider-text {
+            color: white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .status-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-panel h2 {
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .dashboard-back-btn {
+            width: 100%;
+            margin: 10px 0 12px;
+            padding: 12px 0;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /*.dashboard-back-bar:active {
+            background: #c2c2c2;
+        }*/
+
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10;
+                align-items: stretch;
+            }
+
+            /*.charging-device {
+                max-width: 100%;
+                min-height: 100dvh;
+                border-radius: 0;
+                display: flex;
+                flex-direction: column;
+            }*/
+            .charging-device {
+                width: 100vw;
+                max-width: 100%;
+                border-radius: 0;
+
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+              }
+        }
+    </style>
+
+</head>
+
+<body>
+<div class="charging-device">
+    <div class="connection-status status-waiting" id="connectionStatus">
+        Connecting to MQTT broker...
+    </div>
+    <div class="lcd-display">
+        <div class="lcd-top">
+            <div class="voltage"><span id="voltage">--</span>V</div>
+            <div class="current" id="lcdRight"><span id="current">--</span>V</div>
+        </div>
+        <div class="lcd-bottom">
+            <div class="energy" id="lcdLeft"><span id="transmitted">--</span>Wh</div>
+            <div class="datetime"><span id="datetime">--</span></div>
+        </div>
+    </div>
+    <!-- Dashboard Back Bar -->
+    <div class="dashboard-back-btn" id="dashboardBackBtn" onclick="goToDashboard()">
+        ← Back
+    </div>
+
+    <div class="config-panel" id="configPanel">
+        <div class="config-tabs">
+            <button class="config-tab active" data-mode="full">Full Charge</button>
+            <button class="config-tab" data-mode="time">Set Time</button>
+            <button class="config-tab" data-mode="units">Set Units</button>
+        </div>
+        <div class="config-content">
+            <div class="config-mode-content active" id="fullChargeMode">
+                <div class="mode-card">
+                    <div class="mode-icon">🔋</div>
+                    <div class="mode-title">FULL CHARGE</div>
+                    <div class="mode-subtitle">Charge to 100% capacity</div>
+                </div>
+            </div>
+            <div class="config-mode-content mode-card" id="setTimeMode">
+                <div class="slider-section">
+                    <div class="slider-header">
+
+                        <button class="slider-btn" id="timeDecrease">-</button>
+                        <div class="slider-value">
+                            <span id="timeValue">0</span><span class="unit">:00</span>
+                        </div>
+                        <button class="slider-btn" id="timeIncrease">+</button>
+                    </div>
+                    <div class="slider-track">
+                        <div class="slider-progress" id="timeProgress" style="width: 0%"></div>
+                        <div class="slider-thumb" id="timeThumb" style="left: 0%"></div>
+                    </div>
+                    <div class="slider-info">
+                        Estimated energy gain: ~ <span id="estimatedEnergy">0</span> KWh<br>
+                        Charging will stop at <span id="stopTime">0 hour, 00 min</span>
+                    </div>
+                </div>
+            </div>
+            <div class="config-mode-content mode-card" id="setUnitsMode">
+                <div class="slider-section">
+                    <div class="slider-header">
+                        <button class="slider-btn" id="unitsDecrease">-</button>
+                        <div class="slider-value">
+                            <span id="unitsValue">0</span><span class="unit">KWh</span>
+                        </div>
+                        <button class="slider-btn" id="unitsIncrease">+</button>
+                    </div>
+                    <div class="slider-track">
+                        <div class="slider-progress" id="unitsProgress" style="width: 0%"></div>
+                        <div class="slider-thumb" id="unitsThumb" style="left: 0%"></div>
+                    </div>
+                    <div class="slider-info">
+                        Estimated duration: ~ <span id="estimatedDuration">0</span> hours<br>
+                        Charging will stop at <span id="stopUnits">0</span> KWh
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="backBtn" class="back-btn disabled hidden">← Back</button>
+    <div class="status-panel hidden" id="statusPanel">
+        <h2>Charging Status</h2>
+        <div class="progress-line">
+            <span class="progress-label">Progress:</span>
+            <div class="progress-details">
+                <span class="progress-percentage" id="progress">0%</span>
+                <span class="progress-fraction">[ <span
+                        id="transmittedDisplay">0.00</span> kWh / <span
+                        id="targetDisplay">0</span> kWh ]</span>
+            </div>
+        </div>
+        <div class="estimated-time">
+            <span>Estimated Time Remaining:</span>
+            <span class="estimated-value" id="estimated">-</span>
+        </div>
+    </div>
+    <div class="chart-section hidden" id="chartSection">
+        <h3>Charging Pattern</h3>
+        <div class="tab-header">
+            <button class="tab-button active" data-chart="current">Current</button>
+            <button class="tab-button" data-chart="voltage">Voltage</button>
+            <button class="tab-button" data-chart="power">Power</button>
+            <div class="tab-indicator"></div>
+        </div>
+        <div class="chart-container">
+            <canvas id="chartCanvas"></canvas>
+        </div>
+    </div>
+    <div class="start-slider-wrapper" id="startSliderWrapper">
+        <div class="start-slider-container" id="startSlider">
+            <div class="start-slider-track">
+                <div class="start-slider-button">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
+                    </svg>
+                </div>
+                <div class="start-slider-text" id="sliderText">Slide to start</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    const user = localStorage.getItem("loggedInUser");
+    const chargerKey = "chargers_" + user;
+
+    let dateInterval = null
+    let isChargingActive = false
+    let chargingStartTime = null
+    let activeChart = 'current'
+    let chartDataPoints = {
+        times: [],
+        currents: [],
+        voltages: [],
+        powers: [],
+    }
+    const MAX_CHART_POINTS = 50
+
+    let backEnabled = true;
+    let chargingMode = 'full'
+    let targetEnergy = 0
+    let targetTime = 0
+    let targetUnits = 0
+    let sessionStartEnergy = 0
+    let currentVoltageValue = 0
+    let averagePowerKw = 0
+    let powerReadings = []
+    const MAX_POWER_READINGS = 10
+
+
+    function saveChargerStats(sessionEnergyKwh, sessionDurationMin) {
+      if (!user || !mstrDeviceId) return;
+
+      let chargers = JSON.parse(localStorage.getItem(chargerKey)) || [];
+
+      const index = chargers.findIndex(c => c.id === mstrDeviceId);
+      if (index === -1) return;
+
+      const charger = chargers[index];
+
+      if (!charger.stats) {
+        charger.stats = {
+          totalEnergy: 0,
+          lastSessionEnergy: 0,
+          lastSessionTime: 0,
+          lastUsed: null
+        };
+      }
+
+      charger.stats.totalEnergy += sessionEnergyKwh;
+      charger.stats.lastSessionEnergy = sessionEnergyKwh;
+      charger.stats.lastSessionTime = sessionDurationMin;
+      charger.stats.lastUsed = Date.now();
+      charger.status = "online";
+
+      chargers[index] = charger;
+      localStorage.setItem(chargerKey, JSON.stringify(chargers));
+    }
+
+    const canvas = document.getElementById('chartCanvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+
+    const chartData = {
+        labels: ['Waiting for data...'],
+        datasets: [{
+            label: 'Current (A)',
+            data: [0],
+            fill: true,
+            tension: 0.4,
+            backgroundColor: 'rgba(102, 126, 234, 0.3)',
+            borderColor: 'rgba(102, 126, 234, 1)',
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5
+        }]
+    }
+    let chart = null;
+
+    if (ctx) {
+    console.log("CHART INIT START");
+
+      chart = new Chart(ctx, {
+
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function (value) {
+                                return value.toFixed(2);
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Current (A)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function (context) {
+                                return 'Current: ' + context.parsed.y.toFixed(3) + ' A';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateDateTime() {
+        const now = new Date();
+        const options = {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        }
+        const formatted = now.toLocaleString('en-GB', options).replace(',', '');
+        $('#datetime').text(formatted)
+    }
+    function updateConnectionStatus(status, message) {
+        const statusEl = $('#connectionStatus');
+        statusEl.removeClass('status-waiting status-connected status-error');
+
+        if (status === 'connected') {
+            statusEl.addClass('status-connected').text(message)
+        } else if (status === 'error') {
+            statusEl.addClass('status-error').text(message)
+        } else {
+            statusEl.addClass('status-waiting').text(message)
+        }
+    }
+    function formatElapsedTime(startTime) {
+        const elapsed = Date.now() - startTime;
+        const seconds = Math.floor(elapsed / 1000) % 60;
+        const minutes = Math.floor(elapsed / 60000) % 60;
+        const hours = Math.floor(elapsed / 360000);
+
+        if (hours > 0) {
+            return `${hours}h ${minutes}m ${seconds}s`
+        } else if (minutes > 0) {
+            return `${minutes}m ${seconds}s`
+        } else {
+            return `${seconds}s`;
+        }
+    }
+    function updateAveragePower(currentAmps, voltage) {
+        const powerKw = (currentAmps * voltage) / 1000;
+        powerReadings.push(powerKw)
+
+        if (powerReadings.length > MAX_POWER_READINGS) {
+            powerReadings.shift()
+        }
+        const sum = powerReadings.reduce((a, b) => a + b, 0);
+        averagePowerKw = sum / powerReadings.length;
+    }
+    function updateChargingStatus(transmittedKwh, currentAmps) {
+        if (!isChargingActive) return;
+        $('#transmittedDisplay').text(transmittedKwh.toFixed(2))
+        updateAveragePower(currentAmps, currentVoltageValue);
+        if (chargingMode === 'full' || chargingMode === 'units') {
+            const target = chargingMode === 'full' ? targetEnergy : targetUnits;
+            const remaining = Math.max(0, target - transmittedKwh)
+
+            const progress = Math.min(100, (transmittedKwh / target) * 100);
+            $('#progress').text(progress.toFixed(1) + '%');
+
+            if (transmittedKwh >= target) {
+                console.log('Target Reached!')
+                stopCharging('Charging Completed')
+                return;
+            }
+            if (averagePowerKw > 0 && remaining > 0) {
+                const hoursRemaining = remaining / averagePowerKw
+                const minutesRemaining = Math.round(hoursRemaining * 60)
+
+                const hrs = Math.floor(minutesRemaining / 60)
+                const mins = minutesRemaining % 60
+                if (hrs > 0) {
+                    $('#estimated').text(`${hrs}h ${mins}m`)
+                } else {
+                    $('#estimated').text(`${mins}m`)
+                }
+            } else {
+                $('#estimated').text('-')
+            }
+        } else {
+            const elapsedMinutes = (Date.now() - chargingStartTime) / 60000
+            const remainingMinutes = Math.max(0, targetTime - elapsedMinutes)
+            const hrs = Math.floor(remainingMinutes / 60);
+            const mins = Math.round(remainingMinutes % 60);
+            if (hrs > 0) {
+                $('#estimated').text(`${hrs}h ${mins}m`)
+            } else {
+                $('#estimated').text(`${mins}m`)
+            }
+            const progress = Math.min(100, (elapsedMinutes / targetTime) * 100)
+            $('#progress').text(progress.toFixed(1) + '%')
+            if (elapsedMinutes >= targetTime) {
+                console.log('Target time reached!')
+                stopCharging('Target time reached!')
+                return;
+            }
+        }
+    }
+    function startCharging() {
+        disableBackButton();
+        backEnabled = false;
+        history.pushState({ charging: true }, '', '#charging');
+        const activeTab = $('.config-tab.active').data('mode');
+        chargingMode = activeTab;
+        $('#startSlider').removeClass('completed stopped').addClass('charging');
+        if (chargingMode === 'full') {
+            targetEnergy = 100;
+            $('#targetDisplay').text('100');
+        } else if (chargingMode === 'time') {
+            targetTime = timeMinutes;
+            const hrs = Math.floor(targetTime / 60);
+            const mins = targetTime % 60;
+            $('#targetDisplay').text('Time: ' + (hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`));
+        } else if (chargingMode === 'units') {
+            targetEnergy = unitsKwh;
+            targetUnits = unitsKwh;
+            $('#targetDisplay').text(targetUnits);
+        }
+
+        isChargingActive = true;
+        chargingStartTime = Date.now();
+        sessionStartEnergy = 0;
+        powerReadings = [];
+
+        client.subscribe(`pwt_fm01/${mstrDeviceId}/logs`, { qos: 1 }, function (err) {
+            if (!err) {
+                console.log(`Subscribed to: pwt_fm01/${mstrDeviceId}/logs`);
+            } else {
+                console.error('Subscribe error:', err);
+            }
+        });
+
+        executeCommand("REL 1");
+
+        $('#sliderText').text('Charging');
+
+        const containerWidth = $('#startSlider').width();
+        const buttonWidth = $('#startSlider .start-slider-button').width();
+        const maxMove = containerWidth - buttonWidth - 10;
+        $('#startSlider .start-slider-button').css('left', maxMove + 'px');
+
+        $('#configPanel').addClass('hidden');
+        $('#backBtn').removeClass('hidden');
+        $('#statusPanel').removeClass('hidden');
+        $('#chartSection').removeClass('hidden');
+        $('#dashboardBackBtn').addClass('hidden');
+
+        $('#transmittedDisplay').text('0.00');
+        $('#progress').text('0%');
+        $('#estimated').text('-');
+
+        resetChart();
+
+        updateConnectionStatus('connected', 'Charging in progress...');
+    }
+    function stopCharging(reason) {
+        if (chargingStartTime) {
+          const durationMin = Math.round((Date.now() - chargingStartTime) / 60000);
+          const lastEnergy = Number($('#transmittedDisplay').text()) || 0;
+
+          saveChargerStats(lastEnergy, durationMin);
+        }
+
+        console.log('Stopping charging:', reason)
+        enableBackButton();
+        isChargingActive = false
+        chargingStartTime = null
+        powerReadings = []
+        averagePowerKw = 0
+
+        executeCommand("REL 0"); // Stop charging at device level
+
+        updateConnectionStatus('connected', reason || 'Charging Stopped')
+        $('#startSlider').removeClass('completed charging').addClass('stopped')
+        $('#sliderText').text('Charging stopped')
+
+        client.unsubscribe(`pwt_fm01/${mstrDeviceId}/logs`, function (err) {
+            if (!err) {
+                console.log(`Unsubscribed from: pwt_fm01/${mstrDeviceId}/logs`)
+            } else {
+                console.error(`Unsubscribe error:`, err)
+            }
+        })
+
+        // Keep status and chart visible (don't hide them)
+        $('#statusPanel').removeClass('hidden')
+        $('#chartSection').removeClass('hidden')
+        $('#configPanel').addClass('hidden')
+        // Push stopped state to history (enables back navigation)
+        history.pushState({ screen: 'stopped' }, '', '#stopped');
+    }
+    function addChartDataPoint(current, voltage) {
+        if (!isChargingActive || chargingStartTime === null) return;
+        const elapsedTime = formatElapsedTime(chargingStartTime)
+        const power = (current * voltage) / 1000
+        chartDataPoints.times.push(elapsedTime)
+        chartDataPoints.currents.push(current)
+        chartDataPoints.voltages.push(voltage)
+        chartDataPoints.powers.push(power)
+
+        if (chartDataPoints.times.length > MAX_CHART_POINTS) {
+            chartDataPoints.times.shift()
+            chartDataPoints.currents.shift()
+            chartDataPoints.voltages.shift()
+            chartDataPoints.powers.shift()
+        }
+        updateChartDisplay()
+    }
+    function updateChartDisplay() {
+        chartData.labels = chartDataPoints.times;
+        switch (activeChart) {
+            case 'current':
+                chartData.datasets[0].data = chartDataPoints.currents;
+                chartData.datasets[0].label = 'Current (A)';
+                chartData.datasets[0].borderColor = 'rgba(102, 126, 234, 1)';
+                chartData.datasets[0].backgroundColor = 'rgba(102, 126, 234, 0.3)';
+                chart.options.scales.y.title.text = 'Current (A)';
+                chart.options.plugins.tooltip.callbacks.label = function (context) {
+                    return 'Current: ' + context.parsed.y.toFixed(3) + ' A';
+                };
+                break;
+            case 'voltage':
+                chartData.datasets[0].data = chartDataPoints.voltages;
+                chartData.datasets[0].label = 'Voltage (V)';
+                chartData.datasets[0].borderColor = 'rgba(118, 75, 162, 1)';
+                chartData.datasets[0].backgroundColor = 'rgba(118, 75, 162, 0.3)';
+                chart.options.scales.y.title.text = 'Voltage (V)';
+                chart.options.plugins.tooltip.callbacks.label = function (context) {
+                    return 'Voltage: ' + context.parsed.y.toFixed(2) + ' V';
+                };
+                break;
+            case 'power':
+                chartData.datasets[0].data = chartDataPoints.powers;
+                chartData.datasets[0].label = 'Power (kW)';
+                chartData.datasets[0].borderColor = 'rgba(255, 152, 0, 1)';
+                chartData.datasets[0].backgroundColor = 'rgba(255, 152, 0, 0.3)';
+                chart.options.scales.y.title.text = 'Power (kW)';
+                chart.options.plugins.tooltip.callbacks.label = function (context) {
+                    return 'Power: ' + context.parsed.y.toFixed(3) + ' kW';
+                };
+                break;
+        }
+        chart.update('none')
+    }
+    function resetChart() {
+        chartDataPoints.times = []
+        chartDataPoints.currents = []
+        chartDataPoints.voltages = []
+        chartDataPoints.powers = []
+        chartData.labels = ['Waiting...']
+        chartData.datasets[0].data = [0]
+        chart.update()
+    }
+    function executeCommand(strCmd) {
+        let joParam = { "data": strCmd, "messageId": "SMSCommand", "vendorId": "Amposys" }
+        let jarrMessage = [2, `${Date.now()}`, "DataTransfer", joParam]
+        let strMessage = JSON.stringify(jarrMessage)
+        client.publish(`pwt_fm01/${mstrDeviceId}/command`, strMessage,
+            { qos: 1 },
+            (err) => {
+                if (err) {
+                    console.error('Failed to publish command:', err);
+                } else {
+                    console.log(`Command sent:`, strMessage);
+                }
+            }
+        );
+    }
+    function QueryString(query) {
+        var query_string = {};
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split('=');
+            if (typeof query_string[pair[0]] === 'undefined') {
+                query_string[pair[0]] = pair[1];
+            } else if (typeof query_string[pair[0]] === 'string') {
+                var arr = [query_string[pair[0]], pair[1]];
+                query_string[pair[0]] = arr;
+            } else {
+                query_string[pair[0]].push(pair[1]);
+            }
+        }
+        return query_string;
+    }
+    function updateTimeDisplay() {
+        const hours = Math.floor(timeMinutes / 60);
+        const mins = timeMinutes % 60;
+        $('#timeValue').text(hours);
+        $('.unit', '#setTimeMode .slider-value').text(':' + mins.toString().padStart(2, '0'));
+        $('#stopTime').text(`${hours} hour, ${mins.toString().padStart(2, '0')} min`);
+
+        const maxMinutes = 48 * 60;
+        const percentage = Math.min(100, (timeMinutes / maxMinutes) * 100);
+        $('#timeProgress').css('width', percentage + '%');
+        $('#timeThumb').css('left', percentage + '%');
+
+        if (averagePowerKw > 0) {
+            const estimatedEnergy = Math.round((timeMinutes / 60) * averagePowerKw);
+            $('#estimatedEnergy').text(estimatedEnergy);
+        } else {
+            $('#estimatedEnergy').text(Math.round((timeMinutes / 60) * 3));
+        }
+    }
+    function updateUnitsDisplay() {
+        $('#unitsValue').text(unitsKwh);
+        $('#stopUnits').text(unitsKwh);
+
+        const maxKwh = 100;
+        const percentage = Math.min(100, (unitsKwh / maxKwh) * 100);
+        $('#unitsProgress').css('width', percentage + '%');
+        $('#unitsThumb').css('left', percentage + '%');
+
+        if (averagePowerKw > 0) {
+            const estimatedHours = Math.round(unitsKwh / averagePowerKw);
+            $('#estimatedDuration').text(estimatedHours);
+        } else {
+            $('#estimatedDuration').text(Math.round(unitsKwh / 3));
+        }
+    }
+    function updateUnitsFromPosition(e) {
+        const sliderTrack = $('#unitsProgress').parent();
+        const rect = sliderTrack[0].getBoundingClientRect();
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const offsetX = clientX - rect.left;
+        const percentage = Math.max(0, Math.min(100, (offsetX / rect.width) * 100));
+
+        const maxKwh = 100;
+        unitsKwh = Math.round((percentage / 100) * maxKwh);
+        unitsKwh = Math.max(1, Math.min(maxKwh, unitsKwh));
+        updateUnitsDisplay();
+    }
+    function updateTimeFromPosition(e) {
+        const sliderTrack = $('#timeProgress').parent();
+        const rect = sliderTrack[0].getBoundingClientRect();
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const offsetX = clientX - rect.left;
+        const percentage = Math.max(0, Math.min(100, (offsetX / rect.width) * 100));
+
+        const maxMinutes = 48 * 60;
+        timeMinutes = Math.round((percentage / 100) * maxMinutes);
+        timeMinutes = Math.max(5, Math.min(maxMinutes, timeMinutes));
+        updateTimeDisplay();
+    }
+    function initSlideToStart() {
+    console.log("SLIDER INIT");
+
+        const container = $('#startSlider');
+        const button = container.find('.start-slider-button');
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+
+        function handleStart(e) {
+            isDragging = true;
+            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            container.addClass('sliding');
+            e.preventDefault();
+        }
+        function handleMove(e) {
+            if (!isDragging) return;
+
+            e.preventDefault();
+            currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const deltaX = currentX - startX;
+            const containerWidth = container.width();
+            const buttonWidth = button.width();
+            const maxMove = containerWidth - buttonWidth - 10;
+
+            if (isChargingActive) {
+                let newLeft = Math.max(5, Math.min(maxMove, maxMove + deltaX));
+                button.css('left', newLeft + 'px');
+
+                if (newLeft <= 15) {
+                    completeStopSlide();
+                }
+            } else {
+                let newLeft = Math.max(5, Math.min(maxMove, deltaX + 5));
+                button.css('left', newLeft + 'px');
+
+                if (newLeft >= maxMove - 10) {
+                    completeStartSlide();
+                }
+            }
+        }
+        function handleEnd() {
+            if (!isDragging) return;
+
+            isDragging = false;
+            container.removeClass('sliding');
+
+            const containerWidth = container.width();
+            const buttonWidth = button.width();
+            const maxMove = containerWidth - buttonWidth - 10;
+
+            // if (!container.hasClass('completed') && !container.hasClass('charging')) {
+            //     button.css('left', '5px');
+            // } else if (container.hasClass('charging')) {
+            //     button.css('left', maxMove + 'px');
+            // }
+            if (!container.hasClass('charging')) {
+                button.css('left', '5px');
+            } else {
+                button.css('left', maxMove + 'px');
+            }
+        }
+        function completeStartSlide() {
+            if (container.hasClass('completed') || container.hasClass('charging')) return;
+
+            // container.addClass('completed');
+            isDragging = false;
+
+            setTimeout(() => {
+                startCharging();
+            }, 300);
+        }
+        function completeStopSlide() {
+            if (!container.hasClass('charging')) return;
+
+            isDragging = false;
+            stopCharging('Charging Stopped');
+        }
+        button.on('mousedown', handleStart);
+        $(document).on('mousemove', handleMove);
+        $(document).on('mouseup', handleEnd);
+
+        button.on('touchstart', handleStart);
+        $(document).on('touchmove', handleMove);
+        $(document).on('touchend', handleEnd);
+    }
+    function resetToNewSession() {
+        console.log('Resetting to new session')
+
+        $('#statusPanel').addClass('hidden')
+        $('#chartSection').addClass('hidden')
+        $('#backBtn').addClass('hidden')
+        $('#configPanel').removeClass('hidden')
+        $('#dashboardBackBtn').removeClass('hidden');
+
+        $('#startSlider').removeClass('stopped charging')
+        $('#startSlider .start-slider-button').css('left', '5px')
+        $('#sliderText').text('Slide to Start')
+        disableBackButton();
+        updateConnectionStatus('connected', 'Ready for next session')
+
+        // Clear history and set to main
+        history.replaceState({ screen: 'main' }, '', '#main');
+    }
+    function isChargingRunning() {
+        return isChargingActive === true;
+    }
+    function enableBackButton() {
+        $('#backBtn').removeClass('disabled');
+    }
+    function disableBackButton() {
+        $('#backBtn').addClass('disabled');
+    }
+
+    window.isChargingRunning = function() {
+        return isChargingActive === true;
+    }
+    window.addEventListener('popstate', function (event) {
+        console.log('popstate event:', event.state, window.location.hash);
+
+        if (window.location.hash === '#main' || window.location.hash === '') {
+            // Back to main screen
+            resetToNewSession();
+        } else if (isChargingActive && window.location.hash === '#charging') {
+            // Prevent going back during charging
+            history.pushState({ charging: true }, '', '#charging');
+        }
+    });
+
+    let mstrDeviceId = ''
+    const query = window.location.search.substring(1);
+    const qr = QueryString(query)
+    if (qr.dev) {
+        mstrDeviceId = qr.dev
+        console.log("Device ID from query:", mstrDeviceId)
+    } else {
+        mstrDeviceId = "70041dafd038";
+        console.log("No device ID provided, using default");
+    }
+    const options = {
+        username: "mqttpwt_fw01",
+        password: "Mqtt##fw01",
+        clean: true,
+        connectTimeout: 4000,
+        reconnectPeriod: 1000
+    };
+    const client = mqtt.connect("ws://65.0.141.225:9001/mqtt", options);
+    console.log("MQTT object created");
+
+    client.on('connect', function () {
+    console.log("MQTT CONNECTED");
+
+        console.log('Connected to MQTT broker')
+        updateConnectionStatus('connected', 'Connected-Ready to Start')
+        client.subscribe(`pwt_fm01/${mstrDeviceId}/logs`, function (err) {
+            if (!err) {
+                console.log("Subscribed to topic pwt_fm01/logs")
+            }
+        })
+        updateDateTime()
+        dateInterval = setInterval(updateDateTime, 1000)
+    })
+    client.on('error', function (error) {
+        console.error('Connection error:', error);
+        updateConnectionStatus('error', 'Connection error')
+    })
+    client.on('reconnect', function () {
+        console.error('Reconnecting...');
+        updateConnectionStatus('waiting', 'Reconnecting...')
+    })
+    client.on('close', function () {
+        console.error('Connection closed');
+        updateConnectionStatus('error', 'Disconnected')
+    })
+    client.on('message', function (topic, message) {
+        try {
+            const payload = JSON.parse(message.toString());
+
+            if (Array.isArray(payload) && payload[2] === "MeterValues") {
+                console.log('MeterValues received');
+
+                const meterData = payload[3];
+                const meterValue = meterData && meterData.meterValue;
+
+
+                if (!meterValue) {
+                    console.warn('No meterValue found');
+                    return;
+                }
+
+                let voltage = 0;
+                let current = 0;
+                let energyWh = 0;
+
+                if (typeof meterValue === 'object' && !Array.isArray(meterValue)) {
+                    voltage = meterValue.v ? meterValue.v / 1000 : 0;
+                    current = meterValue.c ? meterValue.c / 1000 : 0;
+                    energyWh = meterValue.e || 0;
+
+                    console.log(`V: ${voltage.toFixed(2)}V, A: ${current.toFixed(3)}A, Wh: ${energyWh.toFixed(0)}`);
+                } else {
+                    console.warn('Unexpected meterValue format');
+                    return;
+                }
+
+                currentVoltageValue = voltage;
+                const energyKwh = energyWh / 1000;
+
+                $('#voltage').text(voltage.toFixed(2));
+                $('#current').text(current.toFixed(3));
+                $('#transmitted').text(energyWh.toFixed(0));
+
+                if (isChargingActive) {
+                    $('#lcdRight').html('<span id="current">' + current.toFixed(3) + '</span> A');
+                    $('#lcdLeft').html('<span id="transmitted">' + energyKwh.toFixed(2) + '</span> kWh');
+
+                    addChartDataPoint(current, voltage);
+                    updateChargingStatus(energyKwh, current);
+                } else {
+                    $('#lcdRight').html('<span id="current">' + voltage.toFixed(2) + '</span> V');
+                    $('#lcdLeft').html('<span id="transmitted">' + energyWh.toFixed(0) + '</span> Wh');
+                }
+            }
+        } catch (error) {
+            console.error('Error processing message:', error);
+        }
+    });
+    $('.config-tab').on('click', function () {
+    console.log("TAB CLICKED");
+        $('.config-tab').removeClass('active')
+        $(this).addClass('active')
+
+        const mode = $(this).data('mode')
+        console.log("MODE =", mode);
+        $('.config-mode-content').removeClass('active')
+        $('#' + mode + 'ChargeMode, #set' + mode.charAt(0).toUpperCase() + mode.slice(1) + 'Mode').addClass('active');
+    })
+    let timeMinutes = 60;
+
+    $('#timeDecrease').on('click', function () {
+        timeMinutes = Math.max(5, timeMinutes - 5);
+        updateTimeDisplay();
+    })
+    $('#timeIncrease').on('click', function () {
+        const maxMinutes = 48 * 60;
+        timeMinutes = Math.min(maxMinutes, timeMinutes + 5);
+        updateTimeDisplay();
+    });
+    let unitsKwh = 10
+    $('#unitsDecrease').on('click', function () {
+        unitsKwh = Math.max(1, unitsKwh - 1);
+        updateUnitsDisplay();
+    });
+    $('#unitsIncrease').on('click', function () {
+        const maxKwh = 100;
+        unitsKwh = Math.min(maxKwh, unitsKwh + 1);
+        updateUnitsDisplay();
+    });
+    let isDraggingUnitsSlider = false;
+    $('#unitsThumb, #unitsProgress').parent().on('mousedown touchstart', function (e) {
+        isDraggingUnitsSlider = true;
+        updateUnitsFromPosition(e);
+    });
+    $(document).on('mousemove touchmove', function (e) {
+        if (isDraggingUnitsSlider) {
+            e.preventDefault();
+            updateUnitsFromPosition(e);
+        }
+    });
+    $(document).on('mouseup touchend', function () {
+        isDraggingUnitsSlider = false;
+    });
+    let isDraggingTimeSlider = false;
+    $('#timeThumb, #timeProgress').parent().on('mousedown touchstart', function (e) {
+        isDraggingTimeSlider = true;
+        updateTimeFromPosition(e);
+    });
+    $(document).on('mousemove touchmove', function (e) {
+        if (isDraggingTimeSlider) {
+            e.preventDefault();
+            updateTimeFromPosition(e);
+        }
+    });
+    $(document).on('mouseup touchend', function () {
+        isDraggingTimeSlider = false;
+    });
+    initSlideToStart();
+    updateTimeDisplay();
+    updateUnitsDisplay();
+    $('.tab-button').on('click', function () {
+        $('.tab-button').removeClass('active')
+        $(this).addClass('active')
+        activeChart = $(this).data('chart')
+        const tabIndex = $(this).index()
+        const tabWidth = $(this).outerWidth();
+        $('.tab-indicator').css({
+            width: tabWidth + 'px',
+            left: (tabIndex * tabWidth) + 'px'
+        });
+        updateChartDisplay();
+    })
+    $(document).ready(function () {
+        const firstTab = $('.tab-button.active')
+        const tabWidth = firstTab.outerWidth()
+        $('.tab-indicator').css({
+            width: tabWidth + 'px',
+            left: '0px'
+        })
+    })
+    window.addEventListener('beforeunload', function () {
+        if (dateInterval) {
+            clearInterval(dateInterval)
+        }
+        if (client) {
+            client.end();
+        }
+    })
+    $('#backBtn').on('click', function () {
+        if (isChargingActive) {
+            console.log('Back disabled: charging running');
+            return;
+        }
+        resetToNewSession();
+    });
+
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && isChargingActive) {
+            console.log('App resumed - charging active, refreshing UI');
+            updateConnectionStatus('connected', 'Charging in progress...');
+        }
+    });
+
+    $(document).ready(function() {
+        history.replaceState({ screen: 'main' }, '', '#main');
+    });
+    function goToDashboard() {
+
+    console.log("DASHBOARD BACK CLICKED");
+
+    if (window.Android) {
+        window.Android.goBackToMain();
+    } else {
+        console.log("Android bridge not found");
+    }
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

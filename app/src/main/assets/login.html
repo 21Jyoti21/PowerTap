@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        * {
+          box-sizing: border-box;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+          margin: 0;
+          background: #f4f6fb;
+        }
+
+        .top-bar {
+          height: 56px;
+          background: linear-gradient(135deg, #764ba2, #092396 );
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          font-weight: 600;
+        }
+
+        .hero {
+          background: linear-gradient(180deg, #eef1ff, #f9faff);
+          padding: 24px 16px 10px;
+          text-align: center;
+          margin-bottom:40px;
+        }
+
+        .hero img {
+          max-width: 220px;
+        }
+
+        .card {
+          background: white;
+          margin: -10px 16px 0;
+          border-radius: 18px;
+          padding: 24px 18px;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+
+        h2 {
+          margin: 0 0 18px;
+          text-align: center;
+          font-size: 22px;
+          color: #222;
+        }
+
+        .input-group {
+          position: relative;
+          margin-bottom: 14px;
+        }
+
+        .input-group input {
+          width: 100%;
+          padding: 12px 14px 12px 42px;
+          border-radius: 10px;
+          border: 1px solid #ddd;
+          font-size: 14px;
+        }
+
+        .input-group span {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 16px;
+          color: #888;
+        }
+
+        .input-group .eye {
+          left: auto;
+          right: 12px;
+          cursor: pointer;
+          font-size: 13px;
+          color: #667eea;
+          font-weight: 600;
+        }
+
+        .forgot {
+          text-align: right;
+          font-size: 13px;
+          margin-bottom: 18px;
+        }
+
+        .forgot a {
+          color: #667eea;
+          text-decoration: none;
+        }
+
+        .btn-primary {
+          width: 100%;
+          padding: 12px;
+          border-radius: 12px;
+          border: none;
+          background: linear-gradient(135deg, #667eea, #667eea);
+          color: white;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-top:20px;
+        }
+
+        .or {
+          text-align: center;
+          margin: 14px 0;
+          color: #aaa;
+          font-size: 13px;
+          margin-top:30px;
+          margin-bottom:30px;
+        }
+
+        .social-btn {
+          width: 100%;
+          padding: 11px;
+          border-radius: 12px;
+          border: 1px solid #ddd;
+          background: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          margin-bottom: 10px;
+          cursor: pointer;
+        }
+
+        .social-btn img {
+          width: 18px;
+          margin-right: 10px;
+        }
+
+        .footer {
+          text-align: center;
+          font-size: 13px;
+          margin-top: 12px;
+        }
+
+        .footer a {
+          color: #667eea;
+          font-weight: 600;
+          text-decoration: none;
+        }
+        .error-msg {
+          display: none;
+          margin-top: 6px;
+          font-size: 13px;
+          color: #d93025;
+          background: #fdecea;
+          padding: 8px 10px;
+          border-radius: 8px;
+        }
+        .icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="top-bar">Login</div>
+
+    <div class="hero">
+        <img src="logo.gif" alt="EV Charging">
+    </div>
+
+    <div class="card">
+
+        <div class="input-group">
+            <span class="icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M4 6h16v12H4z" stroke="#667eea" stroke-width="2"/>
+            <path d="M4 6l8 7 8-7" stroke="#667eea" stroke-width="2"/>
+            </svg>
+            </span>
+
+            <input type="email" id="email" placeholder="Username / Email / Phone Number">
+        </div>
+        <div class="error-msg" id="errorMsg">
+            Please enter your email or username
+        </div>
+
+        <div class="input-group">
+            <span class="icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <rect x="5" y="11" width="14" height="9" rx="2" stroke="#667eea" stroke-width="2"/>
+                    <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#667eea" stroke-width="2"/>
+                </svg>
+            </span>
+
+            <input type="password" id="password" placeholder="Password">
+            <span class="eye" onclick="togglePassword()">Show</span>
+        </div>
+
+        <div class="forgot">
+            <a href="#">Forgot Password?</a>
+        </div>
+
+        <button class="btn-primary" onclick="login()">Log In</button>
+
+        <div class="or">OR</div>
+
+        <div class="social-btn" onclick="socialLogin()">
+            <img src="google.png">
+            Continue with Google
+        </div>
+
+        <div class="social-btn" onclick="socialLogin()">
+            <img src="fb.png">
+            Continue with Facebook
+        </div>
+
+        <div class="footer">
+            Don’t have an account?
+            <a href="#">Sign Up</a>
+        </div>
+    </div>
+
+    <script>
+        function login() {
+        const emailInput = document.getElementById("email");
+        const errorMsg = document.getElementById("errorMsg");
+
+        const email = emailInput.value.trim();
+
+        errorMsg.style.display = "none";
+        emailInput.classList.remove("input-error");
+
+        if (!email) {
+            errorMsg.style.display = "block";
+            emailInput.classList.add("input-error");
+            return;
+        }
+
+        Android.onLoginSuccess(email);
+    }
+
+    function socialLogin() {
+        Android.onLoginSuccess("social_user");
+    }
+        function togglePassword() {
+        const pwd = document.getElementById("password");
+        const eye = document.querySelector(".eye");
+
+        if (pwd.type === "password") {
+            pwd.type = "text";
+            eye.innerText = "Hide";
+        } else {
+            pwd.type = "password";
+            eye.innerText = "Show";
+        }
+    }
+
+    </script>
+
+</body>
+</html>

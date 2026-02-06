@@ -1,0 +1,15 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Base.Theme.MyApplication" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Purple status bar -->
+        <item name="android:statusBarColor">#764BA2</item>
+
+        <!-- White icons -->
+        <item name="android:windowLightStatusBar">false</item>
+
+    </style>
+
+    <style name="Theme.MyApplication" parent="Base.Theme.MyApplication"/>
+
+</resources>
