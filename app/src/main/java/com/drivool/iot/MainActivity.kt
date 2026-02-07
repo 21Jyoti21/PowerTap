@@ -1,7 +1,6 @@
-package com.example.myapplication
+package com.drivool.iot.powertap
 
 import android.content.Intent
-import android.net.wifi.ScanResult
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
@@ -13,8 +12,6 @@ import androidx.core.view.WindowInsetsCompat
 import com.journeyapps.barcodescanner.CaptureActivity
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
-import android.view.View
-import android.webkit.WebView
 import android.widget.LinearLayout
 
 class MainActivity : AppCompatActivity() {

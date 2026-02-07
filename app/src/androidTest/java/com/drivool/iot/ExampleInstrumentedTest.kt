@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.drivool.iot
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.drivool.iot.powertap
 
 import android.content.Intent
 import android.os.Bundle

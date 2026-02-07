@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.drivool.iot
 
 import org.junit.Test
 

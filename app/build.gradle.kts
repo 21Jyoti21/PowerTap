@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
+    namespace = "com.drivool.iot"
     compileSdk {
         version = release(36)
     }
