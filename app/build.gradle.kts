@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.drivool.iot"
+    namespace = "com.drivool.iot.powertap"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
+        applicationId = "com.drivool.iot.powertap"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

@@ -1,26 +1,29 @@
 package com.drivool.iot.powertap
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.journeyapps.barcodescanner.CaptureActivity
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
-import android.widget.LinearLayout
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var welcomeTv: TextView
-    lateinit var scanResultCard: androidx.cardview.widget.CardView
+    lateinit var scanResultCard: CardView
     lateinit var scanResultTv: TextView
     lateinit var scanBtn: Button
-    lateinit var chargerListLayout: android.widget.LinearLayout
+    lateinit var chargerListLayout: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +65,7 @@ class MainActivity : AppCompatActivity() {
             addChargerItem(result.contents)
 
         }else{
-            Toast.makeText(this,"Cancelled",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,"Cancelled", Toast.LENGTH_SHORT).show()
 
         }
 
@@ -73,10 +76,10 @@ class MainActivity : AppCompatActivity() {
 
         chargerCount++
 
-        val card = androidx.cardview.widget.CardView(this)
+        val card = CardView(this)
         card.radius = 24f
         card.cardElevation = 8f
-        card.setCardBackgroundColor(android.graphics.Color.parseColor("#F3F0FF"))
+        card.setCardBackgroundColor(Color.parseColor("#F3F0FF"))
 
 
         card.setUseCompatPadding(true)
@@ -96,9 +99,9 @@ class MainActivity : AppCompatActivity() {
         val title = TextView(this)
         title.text = "Charger $chargerCount"
         title.textSize = 16f
-        title.setTypeface(null, android.graphics.Typeface.BOLD)
+        title.setTypeface(null, Typeface.BOLD)
         title.setTextColor(
-            android.graphics.Color.parseColor("#1F1F1F") // dark blackish
+            Color.parseColor("#1F1F1F") // dark blackish
         )
 
         val valueBox = TextView(this)
@@ -106,7 +109,7 @@ class MainActivity : AppCompatActivity() {
         valueBox.textSize = 14f
         valueBox.setPadding(0, 12, 0, 0)
         valueBox.setTextColor(
-            android.graphics.Color.parseColor("#444444") // dark gray
+            Color.parseColor("#444444") // dark gray
         )
 
         container.addView(title)
