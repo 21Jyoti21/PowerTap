@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">EV</string>
+    <string name="app_name">PowerTap</string>
+    <string name="default_web_client_id">
+        306674472836-0a58el5i3a9gqqo5tshhn09h2c9ibr84.apps.googleusercontent.com
+    </string>
+
 </resources>

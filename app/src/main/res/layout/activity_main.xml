@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F6FB"
+    android:background="#F8EBDD"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -110,7 +110,7 @@
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_alignParentBottom="true"
-        android:background="@android:color/white"
+        android:background="#F3E0C7"
         android:orientation="horizontal"
         android:elevation="8dp"
         android:paddingTop="4dp">
@@ -123,12 +123,15 @@
             android:gravity="center"
             android:orientation="vertical"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            >
 
             <ImageView
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:src="@drawable/ic_home"
+                android:tint="#4E342E"
                 android:contentDescription="Home" />
 
             <TextView
@@ -149,16 +152,17 @@
             android:orientation="vertical"
             android:clickable="true"
             android:focusable="true">
-
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/scanBtn"
                 android:layout_width="120dp"
                 android:layout_height="44dp"
                 android:text="Scan QR"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="#FFF8F0"
                 android:background="@drawable/rounded_scan_button"
-                android:gravity="center" />
+                android:backgroundTint="@null"
+                android:gravity="center"/>
+
 
         </LinearLayout>
 
@@ -170,13 +174,15 @@
             android:gravity="center"
             android:orientation="vertical"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <ImageView
                 android:id="@+id/profileImg"
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:src="@drawable/ic_profile"
+                android:tint="#4E342E"
                 android:contentDescription="Profile" />
 
             <TextView
@@ -189,5 +195,16 @@
         </LinearLayout>
 
     </LinearLayout>
-
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/addChargerFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/bottomNav"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:contentDescription="Add Charger"
+        android:src="@drawable/ic_add"
+        app:tint="@android:color/white"
+        app:backgroundTint="#5D4037" />
 </RelativeLayout>

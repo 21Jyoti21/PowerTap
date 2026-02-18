@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "306674472836",
+    "firebase_url": "https://drivool-powertap-default-rtdb.firebaseio.com",
+    "project_id": "drivool-powertap",
+    "storage_bucket": "drivool-powertap.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:306674472836:android:1bd8f501d4f1756d6fefd1",
+        "android_client_info": {
+          "package_name": "com.drivool.iot.powertap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "306674472836-q65244ge95g01v6u32p1adeutdat6ga0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.drivool.iot.powertap",
+            "certificate_hash": "75b2c5cf53299605b4bb09c09518200768a80df7"
+          }
+        },
+        {
+          "client_id": "306674472836-0a58el5i3a9gqqo5tshhn09h2c9ibr84.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCR5TwxQImGIAm_Dc0e8QRRKDA7txf5Obk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "306674472836-0a58el5i3a9gqqo5tshhn09h2c9ibr84.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

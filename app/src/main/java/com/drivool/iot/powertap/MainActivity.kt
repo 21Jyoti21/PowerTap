@@ -13,10 +13,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.journeyapps.barcodescanner.CaptureActivity
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
-
+import org.json.JSONObject
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 class MainActivity : AppCompatActivity() {
 
     lateinit var welcomeTv: TextView
@@ -24,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var scanResultTv: TextView
     lateinit var scanBtn: Button
     lateinit var chargerListLayout: LinearLayout
-
+    lateinit var addChargerFab: FloatingActionButton
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,9 +39,11 @@ class MainActivity : AppCompatActivity() {
         scanResultTv=findViewById(R.id.scanResultTv)
         scanBtn=findViewById(R.id.scanBtn)
         chargerListLayout = findViewById(R.id.chargerList)
+        addChargerFab = findViewById(R.id.addChargerFab)
 
-        val username = intent.getStringExtra("username") ?: "User"
-        welcomeTv.text = "Welcome, $username"
+        val prefs = getSharedPreferences("app", MODE_PRIVATE)
+        val name = prefs.getString("name", "User")
+        welcomeTv.text = "Welcome, $name"
 
         scanBtn.setOnClickListener {
             val options = ScanOptions()
@@ -55,6 +59,14 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        addChargerFab.setOnClickListener {
+            showManualEntryDialog()
+        }
+        val navProfile = findViewById<LinearLayout>(R.id.navProfile)
+
+        navProfile.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
     }
     private val barcodeLauncher=registerForActivityResult(ScanContract()){
         result->
@@ -62,8 +74,47 @@ class MainActivity : AppCompatActivity() {
 //            scanResultTv.text="Scanned Results: ${result.contents}"
 //            scanResultTv.text = result.contents
 //            scanResultCard.visibility = View.VISIBLE
-            addChargerItem(result.contents)
+//            addChargerItem(result.contents)
+            val raw = result.contents.trim()
+            Toast.makeText(this, raw, Toast.LENGTH_LONG).show()
+            try {
+                val chargerId: String
+                val chargerName: String
 
+                if (raw.startsWith("http")) {
+
+                    val decoded = java.net.URLDecoder.decode(raw, "UTF-8")
+
+                    // everything after ?
+                    val params = decoded.substringAfter("?")
+
+                    if (params.contains("&")) {
+                        val parts = params.split("&")
+
+                        chargerId = parts[0].substringAfter("id=")
+                        chargerName = parts[1].substringAfter("name=")
+
+                    } else {
+                        chargerId = params.substringAfter("id=")
+                        chargerName = "PowerTap Charger"
+                    }
+                } else if (raw.startsWith("{")) {
+                    // JSON QR
+                    val json = JSONObject(raw)
+                    chargerId = json.getString("id")
+                    chargerName = json.getString("name")
+
+                } else {
+                    // Plain ID
+                    chargerId = raw
+                    chargerName = "PowerTap Charger"
+                }
+
+                addChargerItem(chargerId, chargerName)
+
+            } catch (e: Exception) {
+                Toast.makeText(this, "Invalid QR Format", Toast.LENGTH_SHORT).show()
+            }
         }else{
             Toast.makeText(this,"Cancelled", Toast.LENGTH_SHORT).show()
 
@@ -72,7 +123,7 @@ class MainActivity : AppCompatActivity() {
     }
     private var chargerCount = 0
 
-    private fun addChargerItem(chargerId: String) {
+    private fun addChargerItem(chargerId: String,chargerName: String) {
 
         chargerCount++
 
@@ -97,7 +148,8 @@ class MainActivity : AppCompatActivity() {
         container.setPadding(36, 32, 36, 32)
 
         val title = TextView(this)
-        title.text = "Charger $chargerCount"
+//        title.text = "Charger $chargerCount"
+        title.text = chargerName
         title.textSize = 16f
         title.setTypeface(null, Typeface.BOLD)
         title.setTextColor(
@@ -105,7 +157,8 @@ class MainActivity : AppCompatActivity() {
         )
 
         val valueBox = TextView(this)
-        valueBox.text = chargerId
+        valueBox.text = "ID: $chargerId"
+//        valueBox.text = chargerId
         valueBox.textSize = 14f
         valueBox.setPadding(0, 12, 0, 0)
         valueBox.setTextColor(
@@ -125,5 +178,45 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, ChargerActivity::class.java)
         intent.putExtra("chargerId", chargerId)
         startActivity(intent)
+    }
+    private fun showManualEntryDialog() {
+
+        val layout = LinearLayout(this)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(40, 30, 40, 10)
+
+        val idEt = android.widget.EditText(this)
+        idEt.hint = "Enter Charger ID"
+
+        val nameEt = android.widget.EditText(this)
+        nameEt.hint = "Enter Charger Name"
+
+        layout.addView(nameEt)
+        layout.addView(idEt)
+
+        //val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Add Charger Manually")
+            .setView(layout)
+            .setPositiveButton("Add") { _, _ ->
+
+                val chargerId = idEt.text.toString().trim()
+                val chargerName = nameEt.text.toString().trim()
+
+                if (chargerId.isEmpty() || chargerName.isEmpty()) {
+                    Toast.makeText(this, "All fields required", Toast.LENGTH_SHORT).show()
+                } else {
+                    addChargerItem(chargerId, chargerName)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.show()
+        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+            .setTextColor(Color.parseColor("#5D4037"))
+
+        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE)
+            .setTextColor(Color.parseColor("#5D4037"))
     }
 }
