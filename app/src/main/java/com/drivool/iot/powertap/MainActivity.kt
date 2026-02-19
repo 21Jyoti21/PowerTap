@@ -71,10 +71,6 @@ class MainActivity : AppCompatActivity() {
     private val barcodeLauncher=registerForActivityResult(ScanContract()){
         result->
         if(result.contents!=null){
-//            scanResultTv.text="Scanned Results: ${result.contents}"
-//            scanResultTv.text = result.contents
-//            scanResultCard.visibility = View.VISIBLE
-//            addChargerItem(result.contents)
             val raw = result.contents.trim()
             Toast.makeText(this, raw, Toast.LENGTH_LONG).show()
             try {
@@ -84,8 +80,6 @@ class MainActivity : AppCompatActivity() {
                 if (raw.startsWith("http")) {
 
                     val decoded = java.net.URLDecoder.decode(raw, "UTF-8")
-
-                    // everything after ?
                     val params = decoded.substringAfter("?")
 
                     if (params.contains("&")) {
@@ -99,13 +93,13 @@ class MainActivity : AppCompatActivity() {
                         chargerName = "PowerTap Charger"
                     }
                 } else if (raw.startsWith("{")) {
-                    // JSON QR
+                    //JSON QR
                     val json = JSONObject(raw)
                     chargerId = json.getString("id")
                     chargerName = json.getString("name")
 
                 } else {
-                    // Plain ID
+                    //Plain ID
                     chargerId = raw
                     chargerName = "PowerTap Charger"
                 }
@@ -148,7 +142,6 @@ class MainActivity : AppCompatActivity() {
         container.setPadding(36, 32, 36, 32)
 
         val title = TextView(this)
-//        title.text = "Charger $chargerCount"
         title.text = chargerName
         title.textSize = 16f
         title.setTypeface(null, Typeface.BOLD)
@@ -158,11 +151,10 @@ class MainActivity : AppCompatActivity() {
 
         val valueBox = TextView(this)
         valueBox.text = "ID: $chargerId"
-//        valueBox.text = chargerId
         valueBox.textSize = 14f
         valueBox.setPadding(0, 12, 0, 0)
         valueBox.setTextColor(
-            Color.parseColor("#444444") // dark gray
+            Color.parseColor("#444444")
         )
 
         container.addView(title)
@@ -194,7 +186,6 @@ class MainActivity : AppCompatActivity() {
         layout.addView(nameEt)
         layout.addView(idEt)
 
-        //val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
         val dialog = MaterialAlertDialogBuilder(this)
             .setTitle("Add Charger Manually")
             .setView(layout)

@@ -26,7 +26,6 @@ class ProfileActivity : AppCompatActivity() {
         val nameTv = findViewById<TextView>(R.id.nameTv)
         val emailTv = findViewById<TextView>(R.id.emailTv)
         val phoneTv = findViewById<TextView>(R.id.phoneTv)
-//        val logoutBtn = findViewById<Button>(R.id.logoutBtn)
         val logoutLayout = findViewById<LinearLayout>(R.id.logoutLayout)
         val prefs = getSharedPreferences("app", MODE_PRIVATE)
 
@@ -35,7 +34,6 @@ class ProfileActivity : AppCompatActivity() {
         emailTv.text = prefs.getString("email", "Not Available")
         phoneTv.text = prefs.getString("phone", "Not Available")
 
-//        logoutBtn.setOnClickListener {
         logoutLayout.setOnClickListener {
         prefs.edit().clear().apply()
             startActivity(Intent(this, LoginActivity::class.java))

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login</title>
+
+    <style>
+
+        *{
+          box-sizing:border-box;
+          font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
+        }
+        body{
+          margin:0;
+          background:#fff6ee;
+        }
+        .top-area{
+          position:relative;
+          overflow:hidden;
+          height:520px;
+          background:#c2185b;
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          color:white;
+          font-size:22px;
+          font-weight:600;
+        }
+        .card{
+          background:#ffffff;
+          margin-top:-80px;
+          padding:34px 24px 44px;
+          border-radius:28px 28px 0 0;
+          border:1.5px solid rgba(255,122,0,0.35);
+          box-shadow:0 0 12px rgba(255,122,0,0.25);
+
+        }
+        h2{
+          text-align:center;
+          margin:0;
+          font-size:22px;
+        }
+        p{
+          text-align:center;
+          color:#777;
+          margin-top:6px;
+          font-size:14px;
+        }
+        .google-btn{
+          margin-top:18px;
+          border:1px solid #ddd;
+          border-radius:12px;
+          padding:12px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:15px;
+          background:white;
+        }
+        .google-btn img{
+          width:20px;
+          margin-right:10px;
+        }
+        .use-email{
+          text-align:center;
+          margin-top:18px;
+          color:#ff7a00;
+          font-weight:600;
+        }
+        .row{
+          display:flex;
+          gap:10px;
+          margin-top:22px;
+        }
+        .phone-box{
+          flex:1;
+          display:flex;
+          align-items:center;
+          background:#f2f2f2;
+          border-radius:12px;
+          padding:12px 14px;
+        }
+        .country-code{
+          font-size:14px;
+          color:#444;
+          margin-right:6px;
+        }
+        .input-side{
+          border:none;
+          outline:none;
+          background:transparent;
+          font-size:14px;
+          width:100%;
+        }
+        .otp-btn{
+          background:#cfd3d6;
+          border:none;
+          color:#777;
+          padding:0 18px;
+          border-radius:12px;
+          font-size:14px;
+          font-weight:600;
+          cursor:pointer;
+        }
+        .otp-btn:hover{
+          background:#bfc4c7;
+        }
+        .otp-btn.active{
+          background:#ff7a00;
+          color:white;
+        }
+        .otp-container{
+          display:flex;
+          justify-content:center;
+          gap:10px;
+          margin-top:20px;
+        }
+        .otp-box{
+          width:42px;
+          height:45px;
+          border-radius:8px;
+          border:none;
+          background:#f2f2f2;
+          text-align:center;
+          font-size:20px;
+        }
+        .email-wrapper{
+          position:relative;
+        }
+        .email-suggest{
+          position:absolute;
+          top:100%;
+          left:0;
+          background:white;
+          width:100%;
+          margin-top:6px;
+          border-radius:10px;
+          box-shadow:0 2px 6px rgba(0,0,0,0.15);
+          overflow:hidden;
+          z-index:10;
+        }
+        .email-suggest div{
+          padding:12px;
+          font-size:14px;
+          cursor:pointer;
+        }
+        .email-suggest div:hover{
+          background:#f2f2f2;
+        }
+        .moving-strip{
+          position:absolute;
+          inset:0;
+          overflow:hidden;
+          z-index:0;
+        }
+        .strip-track{
+          display:flex;
+          width:max-content;
+          height:100%;
+          animation: scrollStrip 10s linear infinite;
+          will-change: transform;
+        }
+        .strip-track img{
+          width:auto;
+          height:120%;
+          object-fit:contain;
+          flex-shrink:0;
+        }
+        @keyframes scrollStrip{
+          from{ transform:translateX(0); }
+          to{ transform:translateX(-50%); }
+        }
+        .card{
+          position:relative;
+          z-index:2;
+        }
+        .fade-overlay{
+          position:absolute;
+          bottom:-40px;
+          left:0;
+          width:100%;
+          height:200px;
+          background:linear-gradient(
+            to bottom,
+            rgba(255,255,255,0),
+            rgba(255,255,255,0.4),
+            #ffffff,
+            #ffffff
+          );
+          z-index:2;
+          pointer-events:none;
+        }
+        .title-main{
+          text-align:center;
+          margin:0;
+          font-size:26px;
+          font-family:'Playfair Display', serif;
+          letter-spacing:0.5px;
+        }
+        .title-sub{
+          text-align:center;
+          margin-top:6px;
+          font-size:16px;
+          color:#777;
+          font-family:'Dancing Script', cursive;
+        }
+        .logo-wrap{
+          display:flex;
+          justify-content:center;
+          margin-bottom:12px;
+        }
+        .logo{
+          width:110px;
+          max-width:60%;
+          filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
+        }
+        .otp-btn:disabled{
+          opacity:0.6;
+          cursor:not-allowed;
+        }
+        .otp-continue-btn{
+          width:100%;
+          margin-top:26px;
+          background:#cfd3d6;
+          border:none;
+          padding:14px;
+          border-radius:12px;
+          font-size:14px;
+          font-weight:600;
+          color:#777;
+          cursor:not-allowed;
+        }
+        .otp-continue-btn.active{
+          background:#ff7a00;
+          color:white;
+          cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-area">
+        <div class="moving-strip">
+            <div class="strip-track">
+                <img src="strip2.png">
+                <img src="strip2.png">
+            </div>
+        </div>
+        <div class="fade-overlay"></div>
+    </div>
+    <div class="card" id="loginCard">
+        <div class="logo-wrap">
+            <img src="pic.png" class="logo">
+        </div>
+        <h2 class="title-main">Login / Signup</h2>
+        <p class="title-sub">Charge smart. Pay only what you use.</p>
+        <div class="row" id="mobileRow">
+            <div class="phone-box">
+                <span class="country-code">+91</span>
+                <input id="mobileInput"
+                       class="input-side"
+                       placeholder="Mobile Number"
+                       type="tel"
+                       inputmode="numeric"
+                       maxlength="10"
+                >
+            </div>
+            <button class="otp-btn" id="mobileBtn" onclick="sendOTP('mobile')" disabled>
+                Get OTP
+            </button>
+        </div>
+        <div class="row" id="emailRow" style="display:none;position:relative;">
+            <div class="phone-box">
+                <input id="emailInput"
+                       class="input-side"
+                       placeholder="Email ID">
+                <div class="email-suggest" id="emailSuggest" style="display:none;">
+                    <div onclick="selectDomain('gmail.com')">gmail.com</div>
+                    <div onclick="selectDomain('yahoo.com')">yahoo.com</div>
+                </div>
+            </div>
+            <button class="otp-btn" id="emailBtn" onclick="sendOTP('email')" disabled>
+                Proceed
+            </button>
+        </div>
+        <div class="google-btn" onclick="Android.startGoogleLogin()">
+            <img src="google.png">
+            Continue with Google
+        </div>
+        <div class="use-email" onclick="toggleLogin()">
+            Use Email ID
+        </div>
+    </div>
+    <div class="card" id="otpCard" style="display:none;">
+        <div style="font-size:22px; cursor:pointer;" onclick="goBack()">←</div>
+        <h2>OTP Verification</h2>
+        <p id="otpText">Enter OTP received on</p>
+        <div class="otp-container">
+            <input maxlength="1" class="otp-box" type="tel" inputmode="numeric">
+            <input maxlength="1" class="otp-box" type="tel" inputmode="numeric">
+            <input maxlength="1" class="otp-box" type="tel" inputmode="numeric">
+            <input maxlength="1" class="otp-box" type="tel" inputmode="numeric">
+            <input maxlength="1" class="otp-box" type="tel" inputmode="numeric">
+            <input maxlength="1" class="otp-box" type="tel" inputmode="numeric">
+        </div>
+        <p style="margin-top:20px;color:#999;">
+            Resend OTP in <span id="timer">30</span> Sec
+        </p>
+        <button class="otp-continue-btn" id="otpContinueBtn" disabled onclick="verifyOtpAndProceed()">
+            Continue
+        </button>
+    </div>
+    <div id="recaptcha-container"></div>
+
+    <script>
+    let isMobileValid = false;
+    let isEmailValid = false;
+    let currentMode = "mobile";
+    function toggleLogin(){
+      const mobileRow = document.getElementById("mobileRow");
+      const emailRow  = document.getElementById("emailRow");
+      const toggleTxt = document.querySelector(".use-email");
+
+      if(currentMode === "mobile"){
+        mobileRow.style.display = "none";
+        emailRow.style.display  = "flex";
+        toggleTxt.innerText = "Use Mobile Number";
+        currentMode = "email";
+      }else{
+        emailRow.style.display  = "none";
+        mobileRow.style.display = "flex";
+        toggleTxt.innerText = "Use Email ID";
+        currentMode = "mobile";
+      }
+    }
+    async function sendOTP(type){
+        let value = type === "mobile"? mobileInput.value.trim(): emailInput.value.trim();
+        window.currentIdentifier = value;
+        showOtpScreen(value);
+        try{
+            const res = await fetch("http://10.185.88.88:3000/api/v1/auth/send-otp",
+            {
+                method:"POST",
+                headers:{ "Content-Type":"application/json" },
+                body: JSON.stringify({ identifier: value })
+            }
+        );
+        }catch(err){
+            console.log(err);
+            alert("Server error");
+        }
+    }
+    window.onerror = function(message, source, lineno, colno, error) {
+      alert("JS Error: " + message);
+      console.log(error);
+    };
+    const mobileInput = document.getElementById("mobileInput");
+    const otpButtons = document.querySelectorAll(".otp-btn");
+    const mobileBtn = document.getElementById("mobileBtn");
+    mobileInput.addEventListener("input",()=>{
+      if(mobileInput.value.length === 10){
+        otpButtons[0].classList.add("active");
+        mobileBtn.disabled = false;
+      }else{
+        otpButtons[0].classList.remove("active");
+        mobileBtn.disabled = true;
+      }
+    });
+    const emailInput = document.getElementById("emailInput");
+    const emailSuggest = document.getElementById("emailSuggest");
+    const proceedBtn = document.querySelectorAll(".otp-btn")[1];
+    const emailBtn = document.getElementById("emailBtn");
+    emailInput.addEventListener("input",()=>{
+      const email = emailInput.value.trim();
+      if(
+        email.includes("@") &&
+        (email.endsWith("@gmail.com") || email.endsWith("@yahoo.com"))
+      ){
+        proceedBtn.classList.add("active");
+        emailBtn.disabled = false;
+      }else{
+        proceedBtn.classList.remove("active");
+        emailBtn.disabled = true;
+      }
+    });
+    emailInput.addEventListener("input",()=>{
+        const val = emailInput.value;
+        if(val.includes("@") && !val.includes(".")){
+            emailSuggest.style.display = "block";
+        }else{
+            emailSuggest.style.display = "none";
+        }
+    });
+    function selectDomain(domain){
+      const name = emailInput.value.split("@")[0];
+      emailInput.value = name + "@" + domain;
+      emailSuggest.style.display = "none";
+      emailInput.dispatchEvent(new Event("input"));
+    }
+    function showOtpScreen(mobile){
+      document.getElementById("loginCard").style.display = "none";
+      document.getElementById("otpCard").style.display = "block";
+      document.getElementById("otpText").innerText ="Enter OTP received on " + mobile;
+      document.getElementById("timer").innerText = "30";
+      startTimer();
+      setTimeout(() => {
+        otpBoxes[0].focus();
+      }, 200);
+    }
+    let timerInterval = null;
+    function startTimer(){
+      if(timerInterval){
+        clearInterval(timerInterval);
+      }
+      let time = 30;
+      const timer = document.getElementById("timer");
+      timer.innerText = time;
+      timerInterval = setInterval(()=>{
+        time--;
+        timer.innerText = time;
+        if(time <= 0){
+          clearInterval(timerInterval);
+          timerInterval = null;
+          timer.innerText = "0";
+        }
+      },1000);
+    }
+    function goBack(){
+        if(timerInterval){
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        clearOtpInputs();
+        document.getElementById("otpCard").style.display = "none";
+        document.getElementById("loginCard").style.display = "block";
+    }
+    const otpBoxes = document.querySelectorAll(".otp-box");
+    const otpContinueBtn = document.getElementById("otpContinueBtn");
+    otpBoxes.forEach((box,index)=>{
+      box.addEventListener("input",()=>{
+        if(box.value && index < otpBoxes.length-1){
+          otpBoxes[index+1].focus();
+        }
+        checkOtpFilled();
+      });
+      box.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !box.value && index > 0) {
+            otpBoxes[index - 1].focus();
+        }
+      });
+    });
+    function checkOtpFilled(){
+        const otp = [...otpBoxes].map(b => b.value).join("");
+        if (otp.length === 6) {
+            otpContinueBtn.classList.add("active");
+            otpContinueBtn.disabled = false;
+        }else {
+            otpContinueBtn.classList.remove("active");
+            otpContinueBtn.disabled = true;
+        }
+    }
+    async function verifyOtpAndProceed(){
+        const otpInputs = document.querySelectorAll(".otp-box");
+        let otp = "";
+        otpInputs.forEach(i => otp += i.value);
+        const identifier = window.currentIdentifier;
+        if(otp.length !== 6){
+            alert("Enter 6 digit OTP");
+            return;
+        }
+        try{
+
+            const response = await fetch(
+              "http://10.185.88.88:3000/api/v1/auth/verify-otp",
+              {
+                method:"POST",
+                headers:{
+                  "Content-Type":"application/json"
+                },
+                body: JSON.stringify({
+                  identifier: identifier,
+                  otp: otp
+                })
+              }
+            );
+            const data = await response.json();
+            if(!data.token){
+              alert("Invalid OTP");
+              return;
+            }
+            console.log("OTP Verified");
+            if(window.Android){
+              Android.onLoginSuccess(
+                data.token,
+                data.user.name || "User",
+                data.user.email || "",
+                data.user.phone || ""
+              );
+            }
+
+        }catch(err){
+            console.log(err);
+            alert("Server error");
+        }
+    }
+    function clearOtpInputs(){
+      const boxes = document.querySelectorAll(".otp-box");
+      boxes.forEach(b => b.value = "");
+      const btn = document.getElementById("otpContinueBtn");
+      btn.classList.remove("active");
+      btn.disabled = true;
+    }
+    </script>
+</body>
+</html>
