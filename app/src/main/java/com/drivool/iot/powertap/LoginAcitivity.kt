@@ -11,7 +11,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-
+import android.util.Log
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 class LoginActivity : AppCompatActivity() {
 
     lateinit var googleClient: GoogleSignInClient
@@ -23,26 +28,59 @@ class LoginActivity : AppCompatActivity() {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 try {
                     val account = task.getResult(ApiException::class.java)
-                    val token = account.idToken ?: ""
+                    val email = account.email ?: ""
+                    val name  = account.displayName ?: "User"
 
-                    val name = account.displayName ?: "User"
-                    val email = account.email ?: "Not Available"
+                    val json = JSONObject()
+                    json.put("email", email)
+                    json.put("name", name)
 
-                    runOnUiThread {
-                        val prefs = getSharedPreferences("app", MODE_PRIVATE)
-                        prefs.edit()
-                            .putString("token", token)
-                            .putString("name", name)
-                            .putString("email", email)
-                            .putString("phone", "Not Available")
-                            .apply()
+                    val body = json.toString()
+                        .toRequestBody("application/json".toMediaType())
 
+                    val client = OkHttpClient()
 
-                        startActivity(Intent(this, MainActivity::class.java))
-                        finish()
+                    val request = Request.Builder()
+                        .url("http://172.31.124.88:3000/api/v1/auth/google-login")
+                        .post(body)
+                        .build()
 
-                    }
+                    client.newCall(request).enqueue(object : Callback {
 
+                        override fun onResponse(call: Call, response: Response) {
+                            val resBody = response.body?.string() ?: ""
+                            val jsonRes = JSONObject(resBody)
+
+                            val token = jsonRes.getString("token")
+                            val userId = jsonRes.getString("userId")
+
+                            runOnUiThread {
+                                val prefs = getSharedPreferences("app", MODE_PRIVATE)
+                                prefs.edit()
+                                    .putString("token", token)
+                                    .putString("userId", userId)
+                                    .putString("name", name)
+                                    .putString("email", email)
+                                    .putString("phone", "Not Available")
+                                    .apply()
+
+                                Log.d("LOGIN_BRIDGE", "TOKEN SAVED = $token")
+                                Log.d("LOGIN_BRIDGE", "USERID SAVED = $userId")
+
+                                startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                                finish()
+                            }
+                        }
+
+                        override fun onFailure(call: Call, e: IOException) {
+                            runOnUiThread {
+                                webView.evaluateJavascript(
+                                    "alert('Server error during Google login')",
+                                    null
+                                )
+                            }
+                        }
+                    })
                 } catch (e: Exception) {
                     runOnUiThread {
                         webView.evaluateJavascript(
@@ -55,6 +93,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
         val prefs = getSharedPreferences("app", MODE_PRIVATE)
@@ -81,15 +120,19 @@ class LoginActivity : AppCompatActivity() {
     inner class WebAppInterface() {
 
         @JavascriptInterface
-        fun onLoginSuccess(token: String, name: String,email: String,phone:String) {
+        fun onLoginSuccess(token: String,userId:String, name: String,email: String,phone:String) {
+            Log.d("LOGIN_BRIDGE", "TOKEN = $token")
+            Log.d("LOGIN_BRIDGE", "USERID = $userId")
+            Log.d("LOGIN_BRIDGE", "NAME = $name")
             val prefs = getSharedPreferences("app", MODE_PRIVATE)
             prefs.edit()
                 .putString("token", token)
+                .putString("userId", userId)
                 .putString("name", name)
                 .putString("email", email)
                 .putString("phone", phone)
                 .apply()
-
+            Log.d("LOGIN", "SAVED USER ID = $userId")
             val intent = Intent(this@LoginActivity, MainActivity::class.java)
 //            intent.putExtra("username", username)
             startActivity(intent)

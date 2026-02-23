@@ -16,7 +16,7 @@
         }
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #F6EAD7;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -41,7 +41,7 @@
         }
 
         .charging-device {
-            background: linear-gradient(145deg, #e6e6e6, #ffffff);
+            background: #FFF3E0;
             border-radius: 30px;
             padding: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -50,28 +50,23 @@
         }
 
         .connection-status {
-            text-align: center;
-            padding: 6px 10px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            font-size:20px;
-            font-weight: bold;
+             background:#EED6B8;          /* light brown */
+    color:#4E342E;               /* dark brown text */
+    border:2px solid #4E342E;    /* thick dark border */
+    border-radius:10px;
+    padding:12px;
+    font-size:15px;
+    font-weight:600;
+    text-align:center;
+    box-shadow:0 2px 4px rgba(0,0,0,0.15);
         }
 
-        .status-waiting {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-connected {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-        }
+        .status-waiting,
+.status-connected,
+.status-error{
+    background:#EED6B8 !important;
+    color:#4E342E !important;
+}
 
         .lcd-display {
             background: linear-gradient(180deg, #a8d5a8 0%, #8bc68b 100%);
@@ -565,13 +560,6 @@
                 align-items: stretch;
             }
 
-            /*.charging-device {
-                max-width: 100%;
-                min-height: 100dvh;
-                border-radius: 0;
-                display: flex;
-                flex-direction: column;
-            }*/
             .charging-device {
                 width: 100vw;
                 max-width: 100%;

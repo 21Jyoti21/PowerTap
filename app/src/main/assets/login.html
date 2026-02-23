@@ -340,7 +340,7 @@
         window.currentIdentifier = value;
         showOtpScreen(value);
         try{
-            const res = await fetch("http://10.185.88.88:3000/api/v1/auth/send-otp",
+            const res = await fetch("http://172.31.124.88:3000/api/v1/auth/send-otp",
             {
                 method:"POST",
                 headers:{ "Content-Type":"application/json" },
@@ -473,7 +473,7 @@
         try{
 
             const response = await fetch(
-              "http://10.185.88.88:3000/api/v1/auth/verify-otp",
+              "http://172.31.124.88:3000/api/v1/auth/verify-otp",
               {
                 method:"POST",
                 headers:{
@@ -486,17 +486,27 @@
               }
             );
             const data = await response.json();
+            console.log("BACKEND DATA =", data);
+console.log("USER ID =", data.user?._id);
             if(!data.token){
               alert("Invalid OTP");
               return;
             }
             console.log("OTP Verified");
             if(window.Android){
+            console.log("CALLING ANDROID WITH UID:", data.userId);
+            console.log("LOGIN DATA:");
+console.log("TOKEN:", data.token);
+console.log("USERID:", data.userId);
+console.log("NAME:", data.name);
+console.log("EMAIL:", data.email);
+console.log("PHONE:", data.phone);
               Android.onLoginSuccess(
                 data.token,
-                data.user.name || "User",
-                data.user.email || "",
-                data.user.phone || ""
+                data.userId,
+                data.name || "User",
+                data.email || "",
+                data.phone || ""
               );
             }
 
